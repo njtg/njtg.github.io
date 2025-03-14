@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llama y Números Alineados con Chispas y Destello</title>
+    <style>
+        body {
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .contenedor-principal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .contenedor-llama {
+            position: relative;
+            width: auto;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .llama-imagen {
+            width: 150px;
+            height: auto;
+            animation: llama-movimiento 1s infinite alternate, llama-parpadeo 1s infinite alternate, llama-encendida 2s infinite alternate;
+            position: relative;
+        }
+
+        @keyframes llama-movimiento {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+
+        @keyframes llama-parpadeo {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes llama-encendida {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.1); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .contenedor-numeros {
+            font-size: 100px;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #FF9800;
+            transition: transform 0.5s ease, opacity 0.5s ease, color 0.5s ease;
+        }
+
+        .sacudir {
+            animation: sacudida 0.5s ease-in-out;
+        }
+
+        @keyframes sacudida {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .centrar-numero {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .centrar-numero.numero-50-abajo {
+            top: 70%;
+            padding-right: 20px;
+        }
+
+        .chispa {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: orange;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes chispa-animacion {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-40px) scale(1);
+            }
+        }
+
+        .destello-imagen {
+            position: absolute;
+            width: 250px;
+            height: auto;
+            animation: giro 10s linear infinite;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes giro {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor-principal">
+        <div class="contenedor-llama">
+            <img src="imagenes/destello.jpg" alt="Destello" class="destello-imagen">
+            <img src="imagenes/image2.png" alt="Llama de Ejemplo" class="llama-imagen">
+            <div class="contenedor-numeros" id="numeros"></div>
+        </div>
+    </div>
+    <script>
+        const numerosDiv = document.getElementById('numeros');
+        const llama = document.querySelector('.llama-imagen');
+        const destelloImagen = document.querySelector('.destello-imagen');
+        let numeroActual = 0;
+        let intervalo;
+        let generarChispasActivo = true;
+
+        function mostrarNumero() {
+            numerosDiv.textContent = numeroActual;
+
+            if (numeroActual === 50) {
+                numerosDiv.style.color = '#FF8C00';
+                numerosDiv.style.WebkitTextStroke = '2px white';
+                numerosDiv.style.textStroke = '2px white';
+            } else {
+                numerosDiv.style.color = '#FF9800';
+                numerosDiv.style.WebkitTextStroke = '';
+                numerosDiv.style.textStroke = '';
+            }
+
+            numeroActual++;
+
+            if (numeroActual > 50) {
+                clearInterval(intervalo);
+                llama.classList.add('sacudir');
+                numerosDiv.classList.add('sacudir'); // Añadido aquí
+                generarChispasActivo = false;
+                setTimeout(() => {
+                    llama.classList.remove('sacudir');
+                    numerosDiv.classList.remove('sacudir'); // Añadido aquí
+                    numerosDiv.classList.add('centrar-numero');
+                    numerosDiv.classList.add('numero-50-abajo');
+                    destelloImagen.style.opacity = 1;
+                }, 500);
+                setTimeout(() => {
+                    numerosDiv.classList.remove('centrar-numero');
+                    numerosDiv.classList.remove('numero-50-abajo');
+                    numeroActual = 0;
+                    intervalo = setInterval(mostrarNumero, 100);
+                    generarChispasActivo = true;
+                }, 20000);
+            }
+        }
+
+        intervalo = setInterval(mostrarNumero, 100);
+
+        function generarChispas() {
+            if (!generarChispasActivo) return;
+
+            const cantidadChispas = 10;
+            const llamaRect = llama.getBoundingClientRect();
+
+            for (let i = 0; i < cantidadChispas; i++) {
+                const chispa = document.createElement('div');
+                chispa.classList.add('chispa');
+                document.querySelector('.contenedor-llama').appendChild(chispa);
+
+                const x = Math.random() * llamaRect.width + llamaRect.left - document.querySelector('.contenedor-llama').getBoundingClientRect().left;
+                const y = Math.random() * llamaRect.height + llamaRect.top - document.querySelector('.contenedor-llama').getBoundingClientRect().top;
+                chispa.style.left = `${x}px`;
+                chispa.style.top = `${y}px`;
+
+                const duracion = Math.random() * 1 + 0.5;
+                const direccionY = Math.random() * 40 - 20;
+                chispa.style.animation = `chispa-animacion ${duracion}s ease-out`;
+
+                chispa.addEventListener('animationend', () => {
+                    chispa.remove();
+                });
+            }
+        }
+
+        setInterval(generarChispas, 500);
+    </script>
+</body>
+</html>
